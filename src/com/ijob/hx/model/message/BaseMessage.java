@@ -14,7 +14,7 @@ public abstract class BaseMessage {
 	private String mTargetType;
 	private String[] mTargets;
 	private String mFrom;
-	private Object mExtend;
+	private String mExtend;
 	private String mMsgType;
 
 	public String getTargetType() {
@@ -41,11 +41,11 @@ public abstract class BaseMessage {
 		mFrom = from;
 	}
 
-	public Object getExtend() {
+	public String getExtend() {
 		return mExtend;
 	}
 
-	public void setExtend(Object extend) {
+	public void setExtend(String extend) {
 		mExtend = extend;
 	}
 

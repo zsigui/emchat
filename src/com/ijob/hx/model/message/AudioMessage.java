@@ -11,7 +11,6 @@ public class AudioMessage extends BaseMessage {
 	private String mUrl;
 	private String mFilename;
 	private int mLength;
-	private String mSecret;
 
 	public AudioMessage() {
 		super();
@@ -40,14 +39,6 @@ public class AudioMessage extends BaseMessage {
 
 	public void setLength(int length) {
 		mLength = length;
-	}
-
-	public String getSecret() {
-		return mSecret;
-	}
-
-	public void setSecret(String secret) {
-		mSecret = secret;
 	}
 
 }

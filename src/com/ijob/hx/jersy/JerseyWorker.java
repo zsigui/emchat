@@ -52,20 +52,27 @@ public class JerseyWorker {
 	public static ObjectNode sendRequest(JerseyWebTarget jerseyWebTarget, Object body, Credential credentail,
 			String method, List<NameValuePair> headers) throws RuntimeException {
 
+		System.out.println(jerseyWebTarget.getUri());
 		ObjectNode objectNode = factory.objectNode();
 
 		if (!HXUtils.isMatchUrl(jerseyWebTarget.getUri().toString())) {
 			L.error("The URL to request is illegal");
-			objectNode.put("message", "The URL to request is illegal");
+			objectNode.put("error", "The URL to request is illegal");
 			return objectNode;
 		}
 
 		try {
 
 			Invocation.Builder inBuilder = jerseyWebTarget.request();
-			if (credentail != null && credentail.getToken() != null) {
-				Token.applyAuthentication(inBuilder, credentail);
-			} 
+			if (credentail != null) {
+				if (credentail.getToken() != null) {
+					Token.applyAuthentication(inBuilder, credentail);
+				} else {
+					L.error("failed to get the token");
+					objectNode.put("error", "failed to get the token");
+					return objectNode;
+				}
+			}
 
 			if (null != headers && !headers.isEmpty()) {
 				for (NameValuePair nameValuePair : headers) {

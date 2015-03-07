@@ -5,21 +5,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public abstract class HXGroupsManager {
 
 	/**
-	 * 获取所有群组ID
+	 * 获取所有群组基本信息(包括ID)
 	 * 
 	 * @return
 	 */
 	public abstract ObjectNode getAllGroupIds();
 
 	/**
-	 * 获取所有群组基本信息
-	 * 
-	 * @return
-	 */
-	public abstract ObjectNode getAllGroupInfo();
-
-	/**
-	 * 获取一个或多个群组详情信息
+	 * 获取一个或多个群组详情信息(群组ID用','隔开)
 	 * 
 	 * @param groupIds
 	 * @return
@@ -37,11 +30,11 @@ public abstract class HXGroupsManager {
 	/**
 	 * 修改群组信息 <br />
 	 * body只接收gorupname, description, maxusers
-	 * 
+	 * @param groupId 
 	 * @param updateBody
 	 * @return
 	 */
-	public abstract ObjectNode updateGroupInfo(ObjectNode updateBody);
+	public abstract ObjectNode updateGroupInfo(String groupId, ObjectNode updateBody);
 
 	/**
 	 * 删除群组
@@ -49,7 +42,7 @@ public abstract class HXGroupsManager {
 	 * @param groupId
 	 * @return
 	 */
-	public abstract ObjectNode deleteGroup(ObjectNode groupId);
+	public abstract ObjectNode deleteGroup(String groupId);
 
 	/**
 	 * 获取群组中所有成员
@@ -75,8 +68,7 @@ public abstract class HXGroupsManager {
 	 * @param usernames
 	 * @return
 	 */
-	public abstract ObjectNode addUsersToGroup(String groupId,
-			ObjectNode usernames);
+	public abstract ObjectNode addUsersToGroup(String groupId, ObjectNode usernames);
 
 	/**
 	 * 群组减人[单个]
@@ -85,8 +77,7 @@ public abstract class HXGroupsManager {
 	 * @param username
 	 * @return
 	 */
-	public abstract ObjectNode deleteUserFromGroup(String groupId,
-			String username);
+	public abstract ObjectNode deleteUserFromGroup(String groupId, String username);
 
 	/**
 	 * 获取一个用户参与的所有群组

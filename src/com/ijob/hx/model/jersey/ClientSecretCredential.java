@@ -26,8 +26,8 @@ public class ClientSecretCredential extends Credential {
 		super(clientID, clientSecret);
 
 		if (role.equals(HXConstants.USER_ROLE_APPADMIN)) {
-			CLIENT_TOKEN_TARGET = EndPoints.TOKEN_APP_TARGET.resolveTemplate("org_name",
-					HXConstants.APPKEY.split("#")[0]).resolveTemplate("app_name", HXConstants.APPKEY.split("#")[1]);
+			CLIENT_TOKEN_TARGET = EndPoints.TOKEN_APP_TARGET.resolveTemplate("org_name", HXConstants.ORG_NAME)
+					.resolveTemplate("app_name", HXConstants.APP_NAME);
 		}
 	}
 
@@ -54,19 +54,16 @@ public class ClientSecretCredential extends Credential {
 
 				ObjectNode tokenRequest = JerseyWorker.sendRequest(getTokenRequestTarget(), objectNode, null,
 						HXHTTPMethod.METHOD_POST, headers);
-				System.out.println("tokenRequest = " + tokenRequest.toString());
-				if (null != tokenRequest.get("error")) {
+				
+				if (tokenRequest == null || null != tokenRequest.get("error")) {
 					return token;
 				}
-
+				System.out.println("tokenRequest = " + tokenRequest.toString());
 				String accessToken = tokenRequest.get("access_token").asText();
-
 				Long expiredAt = System.currentTimeMillis() + tokenRequest.get("expires_in").asLong() * 1000;
-
 				token = new Token(accessToken, expiredAt);
 			} catch (Exception e) {
 				e.printStackTrace();
-				throw new RuntimeException("Some errors ocuured while fetching a token by usename and passowrd .");
 			}
 		}
 

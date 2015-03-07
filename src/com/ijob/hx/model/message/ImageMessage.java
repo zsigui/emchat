@@ -10,10 +10,7 @@ public class ImageMessage extends BaseMessage {
 
 	private String mUrl;
 	private String mFilename;
-	private String mSecret;
 
-	
-	
 	public ImageMessage() {
 		super();
 		setMsgType("img");
@@ -33,14 +30,6 @@ public class ImageMessage extends BaseMessage {
 
 	public void setFilename(String filename) {
 		mFilename = filename;
-	}
-
-	public String getSecret() {
-		return mSecret;
-	}
-
-	public void setSecret(String secret) {
-		mSecret = secret;
 	}
 
 }

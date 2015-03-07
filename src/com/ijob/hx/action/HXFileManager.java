@@ -4,7 +4,7 @@ import java.io.File;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public abstract class HXFileManager {
+public abstract class HXFileManager{
 
 	/**
 	 * 图片/语音文件上传

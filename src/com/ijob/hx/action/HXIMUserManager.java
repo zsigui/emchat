@@ -3,7 +3,7 @@ package com.ijob.hx.action;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public abstract class HXIMUserManager {
+public abstract class HXIMUserManager{
 
 	/**
 	 * 注册IM用户[单个]
