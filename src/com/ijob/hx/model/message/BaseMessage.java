@@ -53,7 +53,7 @@ public abstract class BaseMessage {
 		return mMsgType;
 	}
 
-	public void setMsgType(String msgType) {
+	protected void setMsgType(String msgType) {
 		mMsgType = msgType;
 	}
 }

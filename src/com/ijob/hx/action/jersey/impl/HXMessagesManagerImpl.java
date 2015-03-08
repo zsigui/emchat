@@ -11,6 +11,7 @@ import com.ijob.hx.constants.HXConstants;
 import com.ijob.hx.constants.HXHTTPMethod;
 import com.ijob.hx.jersy.JerseyWorker;
 import com.ijob.hx.model.jersey.EndPoints;
+import com.ijob.hx.model.message.TextMessage;
 
 public class HXMessagesManagerImpl extends HXMessagesManager {
 
@@ -23,34 +24,42 @@ public class HXMessagesManagerImpl extends HXMessagesManager {
 		// check properties that must be provided
 		if (!("users".equals(targetType) || "chatgroups".equals(targetType))) {
 			L.error("TargetType must be users or chatgroups .");
-
 			objectNode.put("error", "TargetType must be users or chatgroups .");
-
+			return objectNode;
+		}
+		
+		if (target == null || target.size() == 0) {
+			L.error("send targets must be provided.");
+			objectNode.put("error", "send targets must be provided.");
+			return objectNode;
+		}
+		
+		if (StringUtils.isEmpty(from)) {
+			L.error("from must be provided.");
+			objectNode.put("error", "from must be provided.");
+			return objectNode;
+		}
+		
+		if (msg == null) {
+			L.error("msg must be provided.");
+			objectNode.put("error", "msg must be provided.");
 			return objectNode;
 		}
 
 		try {
 			// 构造消息体
 			dataNode.put("target_type", targetType);
-			dataNode.put("target", target.toString());
+			dataNode.put("target", target);
 			dataNode.put("msg", msg);
 			dataNode.put("from", from);
-			dataNode.put("ext", ext);
-
-			JerseyWebTarget webTarget = EndPoints.USERS_TARGET.resolveTemplate("org_name", HXConstants.ORG_NAME)
+			if (ext != null && ext.size() != 0) {
+				dataNode.put("ext", ext);
+			}
+			System.out.println(dataNode);
+			JerseyWebTarget webTarget = EndPoints.MESSAGES_TARGET.resolveTemplate("org_name", HXConstants.ORG_NAME)
 					.resolveTemplate("app_name", HXConstants.APP_NAME);
 
 			objectNode = JerseyWorker.sendRequest(webTarget, dataNode, HXManager.sCredential, HXHTTPMethod.METHOD_POST, null);
-
-			objectNode = (ObjectNode) objectNode.get("data");
-			for (int i = 0; i < target.size(); i++) {
-				String resultStr = objectNode.path(target.path(i).asText()).asText();
-				if ("success".equals(resultStr)) {
-					L.error(String.format("Message has been send to user[%s] successfully .", target.path(i).asText()));
-				} else if (!"success".equals(resultStr)) {
-					L.error(String.format("Message has been send to user[%s] failed .", target.path(i).asText()));
-				}
-			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -60,7 +69,7 @@ public class HXMessagesManagerImpl extends HXMessagesManager {
 	}
 
 	@Override
-	public Object obtainChatMessage(ObjectNode queryStrNode) {
+	public ObjectNode obtainChatMessage(ObjectNode queryStrNode) {
 		ObjectNode objectNode = HXManager.sJsonFactory.objectNode();
 
 		try {
@@ -83,6 +92,27 @@ public class HXMessagesManagerImpl extends HXMessagesManager {
 			e.printStackTrace();
 		}
 		return objectNode;
+	}
+	
+	public static void main(String[] args) {
+		TextMessage msg = new TextMessage();
+		msg.setFrom("test__15030809245513.837394459629648");
+		msg.setTargetType("users"); // or chatgroups
+		msg.setExtend(null);
+		msg.setMsgInfo("this is a text");
+		msg.setTargets(new String[]{"test__15030809245539.5547858787524", "test__15030809245597.39145182886534"});
+		ObjectNode objectNode = HXManager.sMessageManager.sendChatMessage(msg);
+		if (objectNode != null) {
+			System.out.println("发送文本信息：" + objectNode.toString());
+		}
+		
+		// 聊天消息 获取最新的20条记录
+        ObjectNode queryStrNode = HXManager.sJsonFactory.objectNode();
+        queryStrNode.put("limit", "20");
+        ObjectNode messages = HXManager.sMessageManager.obtainChatMessage(queryStrNode);
+        if (messages != null) {
+			System.out.println("获取最新的20条记录：" + messages.toString());
+		}
 	}
 
 }

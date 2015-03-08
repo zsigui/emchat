@@ -120,8 +120,9 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 				tmpArrayNode.add(genericArrayNode.get(i));
 				// 300 records on one migration
 				if ((i + 1) % perNumber == 0) {
-					objectNode = createNewIMUsers(genericArrayNode);
+					objectNode = createNewIMUsers(tmpArrayNode);
 					tmpArrayNode.removeAll();
+					System.out.println("分批：" + objectNode.toString());
 					continue;
 				}
 
@@ -129,6 +130,14 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 				if (i > (genericArrayNode.size() / perNumber * perNumber - 1)) {
 					objectNode = createNewIMUsers(genericArrayNode);
 					tmpArrayNode.removeAll();
+					System.out.println("分批：" + objectNode.toString());
+				}
+
+				try {
+					// rest to avoid the error of not found
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 			}
 		}
@@ -143,9 +152,7 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 		// check properties that must be provided
 		if (StringUtils.isEmpty(username)) {
 			L.error("The primaryKey that will be useed to query must be provided .");
-
 			objectNode.put("error", "The primaryKey that will be useed to query must be provided .");
-
 			return objectNode;
 		}
 
@@ -178,7 +185,7 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 				webTarget.queryParam("cursor", cursor);
 			}
 
-			objectNode = JerseyWorker.sendRequest(webTarget, null, HXManager.sCredential, HXHTTPMethod.METHOD_DELETE,
+			objectNode = JerseyWorker.sendRequest(webTarget, null, HXManager.sCredential, HXHTTPMethod.METHOD_GET,
 					null);
 
 		} catch (Exception e) {
@@ -466,7 +473,7 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 
 		try {
 
-			JerseyWebTarget webTarget = EndPoints.USERS_ADDFRIENDS_TARGET
+			JerseyWebTarget webTarget = EndPoints.USERS_BLOCKFRIEND_TARGET
 					.resolveTemplate("org_name", HXConstants.ORG_NAME)
 					.resolveTemplate("app_name", HXConstants.APP_NAME)
 					.resolveTemplate("ownerUserPrimaryKey", owneruser)
@@ -538,12 +545,6 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 					.resolveTemplate("app_name", HXConstants.APP_NAME).path(username).path("status");
 			objectNode = JerseyWorker
 					.sendRequest(webTarget, null, HXManager.sCredential, HXHTTPMethod.METHOD_GET, null);
-			String userStatus = objectNode.get("data").path(username).asText();
-			if ("online".equals(userStatus)) {
-				L.error(String.format("The status of user[%s] is : [%s] .", username, userStatus));
-			} else if ("offline".equals(userStatus)) {
-				L.error(String.format("The status of user[%s] is : [%s] .", username, userStatus));
-			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -567,7 +568,7 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 
 			JerseyWebTarget webTarget = null;
 			webTarget = EndPoints.USERS_TARGET.resolveTemplate("org_name", HXConstants.ORG_NAME)
-					.resolveTemplate("app_name", HXConstants.APP_NAME).path("users").path(username)
+					.resolveTemplate("app_name", HXConstants.APP_NAME).path(username)
 					.path("offline_msg_count");
 			objectNode = JerseyWorker
 					.sendRequest(webTarget, null, HXManager.sCredential, HXHTTPMethod.METHOD_GET, null);
@@ -628,7 +629,7 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 			headers.add(new BasicNameValuePair("Content-Type", "application/json"));
 
 			JerseyWebTarget webTarget = EndPoints.USERS_TARGET.resolveTemplate("org_name", HXConstants.ORG_NAME)
-					.resolveTemplate("app_name", HXConstants.APP_NAME).path("users").path(username).path("deactivate");
+					.resolveTemplate("app_name", HXConstants.APP_NAME).path(username).path("deactivate");
 			objectNode = JerseyWorker.sendRequest(webTarget, null, HXManager.sCredential, HXHTTPMethod.METHOD_POST,
 					headers);
 		} catch (Exception e) {
@@ -655,7 +656,7 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 			headers.add(new BasicNameValuePair("Content-Type", "application/json"));
 
 			JerseyWebTarget webTarget = EndPoints.USERS_TARGET.resolveTemplate("org_name", HXConstants.ORG_NAME)
-					.resolveTemplate("app_name", HXConstants.APP_NAME).path("users").path(username).path("active");
+					.resolveTemplate("app_name", HXConstants.APP_NAME).path(username).path("active");
 			objectNode = JerseyWorker.sendRequest(webTarget, null, HXManager.sCredential, HXHTTPMethod.METHOD_POST,
 					headers);
 		} catch (Exception e) {
@@ -674,12 +675,13 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 	 */
 	private ArrayNode genericArrayNode(String usernamePrefix, Long number) {
 		ArrayNode arrayNode = HXManager.sJsonFactory.arrayNode();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddsssss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
 		for (int i = 0; i < number; i++) {
 			ObjectNode userNode = HXManager.sJsonFactory.objectNode();
-			userNode.put("username", usernamePrefix + "_" + sdf.format(System.currentTimeMillis()));
+			String username = usernamePrefix + "_" + sdf.format(System.currentTimeMillis()) + String.valueOf(i);
+			userNode.put("username", username);
+			System.out.println(username);
 			userNode.put("password", HXConstants.DEFAULT_PASSWORD);
-
 			arrayNode.add(userNode);
 		}
 
@@ -689,7 +691,7 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 	public static void main(String[] args) {
 		/**
 		 * 注册IM用户[单个]
-		 */
+		 *//*
 		ObjectNode datanode = JsonNodeFactory.instance.objectNode();
 		System.out.println(HXConstants.API_SERVER_HOST + ", " + HXConstants.APP_CLIENT_ID + " , "
 				+ HXConstants.APP_CLIENT_SECRET);
@@ -698,6 +700,160 @@ public class HXIMUserManagerImpl extends HXIMUserManager {
 		ObjectNode createNewIMUserSingleNode = HXManager.sUserManager.createNewIMUser(datanode);
 		if (null != createNewIMUserSingleNode) {
 			L.info("注册IM用户[单个]: " + createNewIMUserSingleNode.toString());
+		}
+		*//**
+		 * IM用户登录
+		 *//*
+		ObjectNode imUserLoginNode = HXManager.sUserManager.userLogin(datanode.get("username").asText(),
+				datanode.get("password").asText());
+		if (null != imUserLoginNode) {
+			L.info("IM用户登录: " + imUserLoginNode.toString());
+		}
+
+		*//**
+		 * 注册IM用户[批量生成用户然后注册]
+		 *//*
+		String usernamePrefix = "test";
+		Long perNumber = 10l;
+		Long totalNumber = 55l;
+		ObjectNode createNewIMUserBatchGenNode = HXManager.sUserManager.createNewIMUsersByPrefix(usernamePrefix,
+				perNumber, totalNumber);
+		if (null != createNewIMUserBatchGenNode) {
+			L.info("注册IM用户[批量]: " + createNewIMUserBatchGenNode.toString());
+		}*/
+
+		/**
+		 * 获取IM用户[主键查询]
+		 */
+		//String userPrimaryKey = datanode.get("username").asText();
+		String userPrimaryKey = "test__15030809245536.46436019529708";
+		ObjectNode getIMUsersByPrimaryKeyNode = HXManager.sUserManager.getIMUser(userPrimaryKey);
+		if (null != getIMUsersByPrimaryKeyNode) {
+			L.info("获取IM用户[主键查询]: " + getIMUsersByPrimaryKeyNode.toString());
+		}
+		
+		/**
+		 * 获取IM用户[主键查询]
+		 */
+		ObjectNode getIMUsers = HXManager.sUserManager.getIMUsersRecently(10, null);
+		if (null != getIMUsers) {
+			L.info("获取最近注册IM用户[主键查询]: " + getIMUsers.toString());
+		}
+
+		/**
+		 * 重置IM用户密码 提供管理员token
+		 */
+		String username = "test__15030809245567.33690484017488";
+		ObjectNode json2 = JsonNodeFactory.instance.objectNode();
+		json2.put("newpassword", HXConstants.DEFAULT_PASSWORD);
+		ObjectNode modifyIMUserPasswordWithAdminTokenNode = HXManager.sUserManager.modifyIMUserPwd(username, json2);
+		if (null != modifyIMUserPasswordWithAdminTokenNode) {
+			L.info("重置IM用户密码 提供管理员token: " + modifyIMUserPasswordWithAdminTokenNode.toString());
+		}
+		ObjectNode imUserLoginNode2 = HXManager.sUserManager.userLogin(username, json2.get("newpassword").asText());
+		if (null != imUserLoginNode2) {
+			L.info("重置IM用户密码后,IM用户登录: " + imUserLoginNode2.toString());
+		}
+
+		/**
+		 * 添加好友[单个]
+		 */
+		String ownerUserPrimaryKey = username;
+		String friendUserPrimaryKey = "test__15030809245536.46436019529708";
+		ObjectNode addFriendSingleNode = HXManager.sUserManager.addIMFriend(ownerUserPrimaryKey, friendUserPrimaryKey);
+		if (null != addFriendSingleNode) {
+			L.info("添加好友[单个]: " + addFriendSingleNode.toString());
+		}
+		/**
+		 * 添加好友[单个]
+		 */
+		ownerUserPrimaryKey = username;
+		friendUserPrimaryKey = "test__15030811150001319";
+		addFriendSingleNode = HXManager.sUserManager.addIMFriend(ownerUserPrimaryKey, friendUserPrimaryKey);
+		if (null != addFriendSingleNode) {
+			L.info("添加好友[单个]: " + addFriendSingleNode.toString());
+		}
+
+		/**
+		 * 查看好友
+		 */
+		ObjectNode getFriendsNode = HXManager.sUserManager.getIMFriends(ownerUserPrimaryKey);
+		if (null != getFriendsNode) {
+			L.info("查看好友: " + getFriendsNode.toString());
+		}
+
+		/**
+		 * 解除好友关系
+		 **/
+		ObjectNode deleteFriendSingleNode = HXManager.sUserManager.deleteIMFriend(ownerUserPrimaryKey,
+				friendUserPrimaryKey);
+		if (null != deleteFriendSingleNode) {
+			L.info("解除好友关系: " + deleteFriendSingleNode.toString());
+		}
+
+		/**
+		 * 删除IM用户[单个]
+		 *//*
+		ObjectNode deleteIMUserByUserPrimaryKeyNode = HXManager.sUserManager.deleteIMUser("test__1503081115000130");
+		if (null != deleteIMUserByUserPrimaryKeyNode) {
+			L.info("删除IM用户[单个]: " + deleteIMUserByUserPrimaryKeyNode.toString());
+		}
+
+		*//**
+		 * 删除IM用户[批量]
+		 *//*
+		int limit = 2;
+		ObjectNode deleteIMUserByUsernameBatchNode = HXManager.sUserManager.deleteIMUser(limit, null);
+		if (null != deleteIMUserByUsernameBatchNode) {
+			L.info("删除IM用户[批量]: " + deleteIMUserByUsernameBatchNode.toString());
+		}*/
+		String blockOwner = "k2015030800003";
+		ObjectNode blockNode = HXManager.sUserManager.getBlockIMFriends(blockOwner);
+		if (null != blockNode) {
+			L.info("获取黑名单好友: " + blockNode.toString());
+		}
+		ObjectNode blockFriends = HXManager.sJsonFactory.objectNode();
+		ArrayNode friendsNode = HXManager.sJsonFactory.arrayNode();
+		friendsNode.add("test__15030811150001323");
+		friendsNode.add("test__15030811150001324");
+		friendsNode.add("test__15030811150001325");
+		blockFriends.put("usernames", friendsNode);
+		blockNode = HXManager.sUserManager.addBlockIMFriend(blockOwner, blockFriends);
+		if (null != blockNode) {
+			L.info("添加黑名单好友: " + blockNode.toString());
+		}
+		blockNode = HXManager.sUserManager.deleteBlockIMFriend(blockOwner, "test__15030811150001323");
+		if (null != blockNode) {
+			L.info("删除黑名单好友: " + blockNode.toString());
+		}
+		blockNode = HXManager.sUserManager.getBlockIMFriends(blockOwner);
+		if (null != blockNode) {
+			L.info("获取黑名单好友: " + blockNode.toString());
+		}
+		String msgOwenr = "test__15030809245567.33690484017488";
+		ObjectNode msgNode = HXManager.sUserManager.getUserStatus(msgOwenr);
+		if (null != msgNode) {
+			L.info("查看用户登陆状态: " + msgNode.toString());
+		}
+		msgNode = HXManager.sUserManager.userLogin(msgOwenr, HXConstants.DEFAULT_PASSWORD);
+		if (null != msgNode) {
+			L.info("用户登陆: " + msgNode.toString());
+		}
+		msgNode = HXManager.sUserManager.getUserStatus(msgOwenr);
+		if (null != msgNode) {
+			L.info("查看用户登陆状态: " + msgNode.toString());
+		}
+		msgNode = HXManager.sUserManager.getOfflineMsgCount(msgOwenr);
+		if (null != msgNode) {
+			L.info("查看用户离线消息数量: " + msgNode.toString());
+		}
+		msgNode = HXManager.sUserManager.deactivateIMUser(msgOwenr);
+		if (null != msgNode) {
+			L.info("禁止用户: " + msgNode.toString());
+		}
+		msgNode = HXManager.sUserManager.activateIMUser(msgOwenr);
+		if (null != msgNode) {
+			L.info("解禁用户: " + msgNode.toString());
 		}
 	}
 

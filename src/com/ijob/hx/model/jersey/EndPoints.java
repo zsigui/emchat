@@ -37,7 +37,7 @@ public interface EndPoints {
 			.path("users").path("{friendUserPrimaryKey}");
 	
 	public JerseyWebTarget USERS_BLOCKFRIEND_TARGET = APPLICATION_TEMPLATE
-			.path("users").path("{ownerUserPrimaryKey}").path("block")
+			.path("users").path("{ownerUserPrimaryKey}").path("blocks")
 			.path("users").path("{blockUserPrimaryKey}");
 
 	public JerseyWebTarget MESSAGES_TARGET = APPLICATION_TEMPLATE

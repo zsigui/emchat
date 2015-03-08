@@ -42,7 +42,9 @@ public abstract class HXMessagesManager {
 					}
 				}
 				ObjectNode extNode = HXManager.sJsonFactory.objectNode();
-				extNode.put("ext", HXManager.sObjectMapper.readValue(message.getExtend(), ObjectNode.class));
+				if (message.getExtend() != null) {
+					extNode.put("ext", HXManager.sObjectMapper.readValue(message.getExtend(), ObjectNode.class));
+				}
 
 				if (message instanceof TextMessage) {
 					TextMessage txtMsg = (TextMessage) message;
@@ -182,5 +184,5 @@ public abstract class HXMessagesManager {
 	 * 
 	 * @return
 	 */
-	public abstract Object obtainChatMessage(ObjectNode queryStrNode);
+	public abstract ObjectNode obtainChatMessage(ObjectNode queryStrNode);
 }

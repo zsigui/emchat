@@ -3,7 +3,9 @@ package com.ijob.hx.action;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.ijob.hx.action.jersey.impl.HXFileManagerImpl;
+import com.ijob.hx.action.jersey.impl.HXGroupsManagerImpl;
 import com.ijob.hx.action.jersey.impl.HXIMUserManagerImpl;
+import com.ijob.hx.action.jersey.impl.HXMessagesManagerImpl;
 import com.ijob.hx.constants.HXConstants;
 import com.ijob.hx.model.jersey.ClientSecretCredential;
 import com.ijob.hx.model.jersey.Credential;
@@ -17,4 +19,6 @@ public abstract class HXManager {
 	public static final ObjectMapper sObjectMapper = new ObjectMapper();
 	public static final HXIMUserManager sUserManager = new HXIMUserManagerImpl();
 	public static final HXFileManager sFileManager = new HXFileManagerImpl();
+	public static final HXGroupsManager sGroupManager = new HXGroupsManagerImpl();
+	public static final HXMessagesManager sMessageManager = new HXMessagesManagerImpl();
 }
